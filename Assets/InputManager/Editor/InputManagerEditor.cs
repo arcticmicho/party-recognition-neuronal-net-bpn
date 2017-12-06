@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
-using GameModules;
+using PartyManagerUtils;
 
 [CustomEditor(typeof(InputManager))]
 public class InputManagerEditor : Editor
