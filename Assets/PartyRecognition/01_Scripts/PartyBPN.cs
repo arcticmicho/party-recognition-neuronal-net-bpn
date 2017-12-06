@@ -15,14 +15,12 @@ public class PartyBPN
     private List<float> m_inpA;
     private List<float> m_hidA;
     private List<float> m_hidN;
-    private List<float> m_hidD;
     private List<List<float>> m_hidW;
     private List<float> m_outA;
     private List<float> m_outN;
     private List<float> m_outD;
-
-    private List<float> m_oldD;
     private List<List<float>> m_outW;
+
     private float m_neuronsNumberInp;
     private float m_neuronsNumberHid;
     private float m_neuronsNumberOut;
@@ -304,13 +302,65 @@ public class PartyBPN
         dict.Add("hidW", m_hidW);
         dict.Add("hidA", m_hidA);
         dict.Add("hidN", m_hidN);
-        dict.Add("hidD", m_hidD);
         dict.Add("outW", m_outW);
         dict.Add("outA", m_outA);
         dict.Add("outN", m_outN);
         dict.Add("outD", m_outD);
-        dict.Add("oldD", m_oldD);
+
+        dict.Add("patternIDs", m_patternId);
 
         return dict;
+    }
+
+    public void Deserialize(Dictionary<string, object> dict)
+    {
+        m_learningRate = float.Parse(dict["learningRate"].ToString());
+        m_elasticSigmoid = float.Parse(dict["elasticSigmoid"].ToString());
+        m_momentum = float.Parse(dict["momentum"].ToString());
+        m_thetaThreshold = float.Parse(dict["theta"].ToString());
+
+        m_neuronsNumberInp = float.Parse(dict["neuronInput"].ToString());
+        m_neuronsNumberHid = float.Parse(dict["neuronHidden"].ToString());
+        m_neuronsNumberOut = float.Parse(dict["neuronOut"].ToString());
+
+        m_inpA = DeserializeList(dict["inpA"] as List<object>);
+        m_hidW = DeserializeMatrix(dict["hidW"] as List<object>);
+        m_hidA = DeserializeList(dict["hidA"] as List<object>);
+        m_hidN = DeserializeList(dict["hidN"] as List<object>);
+        m_outW = DeserializeMatrix(dict["outW"] as List<object>);
+        m_outA = DeserializeList(dict["outA"] as List<object>);
+        m_outN = DeserializeList(dict["outN"] as List<object>);
+        m_outD = DeserializeList(dict["outD"] as List<object>);
+
+        m_patternId = new List<string>();
+        List<object> patterns = dict["patternIDs"] as List<object>;
+        for(int i=0, count=patterns.Count; i<count; i++)
+        {
+            m_patternId.Add(patterns[i].ToString());            
+        }
+    }
+
+    public List<float> DeserializeList(List<object> values)
+    {
+        List<float> floatValues = new List<float>();
+        for(int i=0, count=values.Count; i<count; i++)
+        {
+            floatValues.Add(float.Parse(values[i].ToString()));
+        }
+
+        return floatValues;
+    }
+
+    public List<List<float>> DeserializeMatrix(List<object> values)
+    {
+        List<List<float>> floatValues = new List<List<float>>();
+
+        for(int i=0, count1 = values.Count; i<count1; i++)
+        {
+            List<object> subValues = values[i] as List<object>;
+            floatValues.Add(DeserializeList(subValues));
+        }
+
+        return floatValues;
     }
 }

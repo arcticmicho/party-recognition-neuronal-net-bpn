@@ -10,7 +10,7 @@ public class PartyRecognitionManagerEditor : Editor
 {
     PartyRecognitionManager m_instance;
     private int m_selectedPatternIndex = 0;
-    private int m_numberOfEpochs = 0;
+    private int m_numberOfEpochs = 2000;
 
     private IEnumerator m_trainingProcess;
 
@@ -39,7 +39,13 @@ public class PartyRecognitionManagerEditor : Editor
         }
         if(GUILayout.Button("Write NeuronalNet"))
         {            
-            EditorApplication.update += Update;
+            if(m_instance.NeuronalNetwork != null)
+            {
+                WriteCurrentNeuronalNetwork();
+            }else
+            {
+                Debug.LogError("There is not NeuronalNetwork initialized");
+            }
         }
 
         EditorGUILayout.Space();
@@ -109,6 +115,14 @@ public class PartyRecognitionManagerEditor : Editor
             definitions.Add(def.Serialize());
         }
         stream.WriteLine(MiniJSON.Json.Serialize(definitions));
+        stream.Close();
+    }
+
+    private void WriteCurrentNeuronalNetwork()
+    {
+        StreamWriter stream = File.CreateText(AssetDatabase.GetAssetPath(m_instance.NeuronalNetworkTextAsset));
+        Dictionary<string, object> neuronalNetworkData = m_instance.NeuronalNetwork.Serialize();
+        stream.WriteLine(MiniJSON.Json.Serialize(neuronalNetworkData));
         stream.Close();
     }
 
