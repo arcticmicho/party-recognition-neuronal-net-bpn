@@ -59,6 +59,7 @@ public class Example : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        return;
         Vector3 currentPoint = Vector3.zero;
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
         {
@@ -110,9 +111,10 @@ public class Example : MonoBehaviour
         {
             case ExampleMode.Recognize:
                 PropagateResult result = PartyRecognitionManager.Instance.Recognize(m_points.ToArray());
-                string highestPattern;
-                float highestScore = result.GetHighestScore(out highestPattern);
-                Debug.Log("Result: " + (highestScore > PartyRecognitionManager.Instance.SuccessThresholdPercent) + "Score: " + result.GetHighestScore(out highestPattern) + " PatternName: "+ result.HighestPattern);
+                //string highestPattern;
+                //float highestScore = result.GetHighestScore(out highestPattern);
+                //Debug.Log("Result: " + (highestScore > PartyRecognitionManager.Instance.SuccessThresholdPercent) + "Score: " + result.GetHighestScore(out highestPattern) + " PatternName: "+ result.HighestPattern);
+                result.PrettyPrint();
                 break;
             case ExampleMode.SavePattern:
                 PRPatternDefinition newPattern = new PRPatternDefinition(m_points, (int)PartyRecognitionManager.Instance.DefaultNeuronNumberInput, m_patternName);

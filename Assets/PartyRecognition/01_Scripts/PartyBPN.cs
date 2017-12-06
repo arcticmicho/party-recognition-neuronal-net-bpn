@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 /// <summary>
@@ -413,6 +414,18 @@ public class PropagateResult
     {
         patternId = m_highestPattern;
         return m_patternScore[m_highestPattern];
+    }
+
+    public void PrettyPrint()
+    {
+        StringBuilder builder = new StringBuilder();
+        string format = "Pattern Id: {0} || Score: {1} \n";
+        builder.Append(string.Format(format, m_highestPattern, m_patternScore[m_highestPattern]));
+        foreach(string pattern in m_patternScore.Keys)
+        {
+            builder.Append(string.Format(format, pattern, m_patternScore[pattern]));
+        }
+        Debug.Log(builder.ToString());
     }
 }
 
