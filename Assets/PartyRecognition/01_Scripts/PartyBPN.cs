@@ -226,7 +226,7 @@ public class PartyBPN
         }
     }
 
-    public RecognitionResult Propagate(List<float> angles, float successThreshold)
+    public PropagateResult Propagate(List<float> angles, float successThreshold)
     {
         float sum2 = 0f;
         if(angles.Count != m_neuronsNumberInp)
@@ -246,8 +246,8 @@ public class PartyBPN
             m_hidA[i] = Sigmoid(sum2);
         }
 
-        float bestScore = -1.0f;
-        int bestScoreIndex = 0;
+        PropagateResult result = new PropagateResult();
+
         for(int i=0; i<m_neuronsNumberOut; i++)
         {
             sum2 = 0f;
@@ -256,14 +256,10 @@ public class PartyBPN
                 sum2 += m_outW[i][n] * m_hidA[n];                
             }
             m_outA[i] = Sigmoid(sum2);
-            if (m_outA[i] > bestScore)
-            {
-                bestScore = m_outA[i];
-                bestScoreIndex = i;
-            }
+            result.AddScore(m_patternId[i], m_outA[i]);
         }
         
-        return new RecognitionResult(bestScore >= successThreshold, bestScore, m_patternId[bestScoreIndex]);
+        return result;
     }
 
     public void ShowOutputValues()
@@ -364,3 +360,59 @@ public class PartyBPN
         return floatValues;
     }
 }
+
+public class PropagateResult
+{
+    private Dictionary<string, float> m_patternScore;
+    private string m_highestPattern;
+    public string HighestPattern
+    {
+        get { return m_highestPattern; }
+    }
+
+    public PropagateResult()
+    {
+        m_patternScore = new Dictionary<string, float>();
+    }
+
+    /// <summary>
+    /// Add or Update the Score for the given patternId
+    /// </summary>
+    /// <param name="patternId"></param>
+    /// <param name="score"></param>
+    public void AddScore(string patternId, float score)
+    {
+        if(m_patternScore.ContainsKey(patternId))
+        {
+            m_patternScore[patternId] = score;
+        }else
+        {
+            m_patternScore.Add(patternId, score);
+        }
+        if (string.IsNullOrEmpty(m_highestPattern) || m_patternScore[m_highestPattern] <= score)
+        {
+            m_highestPattern = patternId;
+        }
+    }
+
+    public bool RemoveScore(string patternId)
+    {
+        return m_patternScore.Remove(patternId);
+    }
+
+    public float GetScore(string patternId)
+    {
+        if(m_patternScore.ContainsKey(patternId))
+        {
+            return m_patternScore[patternId];
+        }
+        return -1f;
+    }
+
+    public float GetHighestScore(out string patternId)
+    {
+        patternId = m_highestPattern;
+        return m_patternScore[m_highestPattern];
+    }
+}
+

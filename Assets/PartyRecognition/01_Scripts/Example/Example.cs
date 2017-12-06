@@ -59,7 +59,6 @@ public class Example : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        return;
         Vector3 currentPoint = Vector3.zero;
         if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
         {
@@ -103,8 +102,6 @@ public class Example : MonoBehaviour
         {
             ProcessPoints();
         }
-
-
     }
 
     private void ProcessPoints()
@@ -112,11 +109,12 @@ public class Example : MonoBehaviour
         switch (m_mode)
         {
             case ExampleMode.Recognize:
-                RecognitionResult result = PartyRecognitionManager.Instance.Recognize(m_points.ToArray());
-                Debug.Log("Result: " + result.Success + "Score: " + result.RecognitionScore + " ScorePercent: "+ result.RecognitionScoreAsPercent + " PatternName: "+ result.PatternName);
+                PropagateResult result = PartyRecognitionManager.Instance.Recognize(m_points.ToArray());
+                string highestPattern;
+                float highestScore = result.GetHighestScore(out highestPattern);
+                Debug.Log("Result: " + (highestScore > PartyRecognitionManager.Instance.SuccessThresholdPercent) + "Score: " + result.GetHighestScore(out highestPattern) + " PatternName: "+ result.HighestPattern);
                 break;
             case ExampleMode.SavePattern:
-                //Vector2[] normalizedPoints = PartyRecognitionManager.Instance.NormalizePoints(m_points.ToArray());
                 PRPatternDefinition newPattern = new PRPatternDefinition(m_points, (int)PartyRecognitionManager.Instance.DefaultNeuronNumberInput, m_patternName);
                 newPattern.NormalizePoints();
                 PartyRecognitionManager.Instance.AddPattern(newPattern);
