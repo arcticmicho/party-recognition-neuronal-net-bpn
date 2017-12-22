@@ -208,6 +208,12 @@ public class PartyRecognitionManager : MonoSingleton<PartyRecognitionManager>
     {
         m_selectedPatterns.Clear();
     }
+
+    public void ClearPatterns()
+    {
+        m_patternDefinitionSet.Clear();
+        m_patternsDefinitionsDict.Clear();
+    }
 #endif
 
     public class PRPatternGroup

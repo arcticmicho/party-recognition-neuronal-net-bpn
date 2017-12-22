@@ -153,7 +153,7 @@ public class Example : MonoBehaviour
                 result.PrettyPrint();
                 break;
             case ExampleMode.SavePattern:
-                PRPatternDefinition newPattern = new PRPatternDefinition(m_points, (int)PartyRecognitionManager.Instance.DefaultNeuronNumberInput, m_patternName);
+                PRPatternDefinition newPattern = new PRPatternDefinition(m_points, (int)PartyRecognitionManager.Instance.DefaultNeuronNumberInput, m_exampleUI.GetPatternName());
                 newPattern.NormalizePoints();
                 PartyRecognitionManager.Instance.AddPattern(newPattern);
                 break;
