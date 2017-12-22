@@ -107,23 +107,29 @@ public class PartyBPN
         m_absoluteError = 0f;
     }
 
-    public IEnumerator StartTraining(List<PRPatternDefinition> patternDefinitions, int epochs)
+    public IEnumerator StartTraining(List<PartyRecognitionManager.PRPatternGroup> patternGroups, int epochs)
     {
         m_patternId.Clear();
-        for (int i=0, count=patternDefinitions.Count; i<count; i++)
+        for (int i=0, count=patternGroups.Count; i<count; i++)
         {
-            m_patternId.Add(patternDefinitions[i].PatternName);
+            m_patternId.Add(patternGroups[i].GroupName);
         }
 
-        float[][] outInputParameters = MathUtils.IdentityMatrixDotValue(patternDefinitions.Count);
-        string[] outputValues = new string[patternDefinitions.Count];
+        float[][] outInputParameters = MathUtils.IdentityMatrixDotValue(patternGroups.Count);
+        string[] outputValues = new string[patternGroups.Count];
         for (int n = 0, count2 = epochs; n < count2; n++)
         {
-            List<int> randomIndex = MathUtils.FastRandomNumberList(patternDefinitions.Count);
-            for (int i = 0, count = patternDefinitions.Count; i < count; i++)
+            List<int> randomIndex = MathUtils.FastRandomNumberList(patternGroups.Count);
+            for (int i = 0, count = patternGroups.Count; i < count; i++)
             {
                 //We will suppose that all the pattern are Scaled, Translated and Simplified.
-                LearnPattern(patternDefinitions[randomIndex[i]], new List<float>(outInputParameters[randomIndex[i]]));
+                PartyRecognitionManager.PRPatternGroup selectedGroup = patternGroups[randomIndex[i]];
+                List<float> groupOutInputParameters = new List<float>(outInputParameters[randomIndex[i]]);
+                for (int m=0, count3 = selectedGroup.Definition.Count; m<count3; m++)
+                {
+                    LearnPattern(selectedGroup.Definition[m], groupOutInputParameters);
+                }                
+                //LearnPattern(selectedGroup.Definition, groupOutInputParameters);
                 outputValues[randomIndex[i]] = "--" + randomIndex[i] + ": " + m_outD[randomIndex[i]];
             }
             //ShowOutputValues();
@@ -163,7 +169,7 @@ public class PartyBPN
         {
             m_instantError = ComputeDelta(j);
             m_totalError += m_instantError;
-            m_absoluteError += Mathf.Abs(m_totalError);
+            m_absoluteError += Mathf.Abs(m_instantError);
         }
 
         UpdateWeights();
@@ -179,7 +185,7 @@ public class PartyBPN
             {
                 sum2 += m_outD[n] * m_outW[n][i];
             }
-            sum2 *= DlSigmoid(m_hidN[i]);
+            sum2 *= D1Sigmoid(m_hidN[i]);
             for(int n=0; n<m_neuronsNumberInp;n++)
             {
                 m_hidW[i][n] += m_learningRate * sum2 * m_inpA[n];
@@ -195,7 +201,7 @@ public class PartyBPN
 
     private float ComputeDelta(int j)
     {
-        m_outD[j] = (m_outA[j] - Sigmoid(m_outN[j])) * (DlSigmoid(m_outN[j]) + 0.1f);
+        m_outD[j] = (m_outA[j] - Sigmoid(m_outN[j])) * (D1Sigmoid(m_outN[j]) + 0.1f);
         for(int i=0; i<m_neuronsNumberHid; i++)
         {
             m_outW[j][i] += m_outD[j] * m_hidA[i] * m_learningRate;
@@ -278,7 +284,7 @@ public class PartyBPN
         return (1.0f / (1.0f + Mathf.Exp(-1.0f * m_elasticSigmoid * value + m_thetaThreshold)) * 2.0f - 1.0f);
     }
 
-    private float DlSigmoid(float value)
+    private float D1Sigmoid(float value)
     {
         return 2.0f * Mathf.Exp(-1.0f * m_elasticSigmoid * value - m_thetaThreshold) / (1.0f + Mathf.Exp(-2.0f * m_elasticSigmoid * value - m_thetaThreshold));
     }
@@ -385,7 +391,10 @@ public class PropagateResult
     {
         if(m_patternScore.ContainsKey(patternId))
         {
-            m_patternScore[patternId] = score;
+            if(m_patternScore[patternId] < score)
+            {
+                m_patternScore[patternId] = score;
+            }            
         }else
         {
             m_patternScore.Add(patternId, score);

@@ -12,6 +12,8 @@ public class PartyRecognitionManagerEditor : Editor
     private int m_selectedPatternIndex = 0;
     private int m_numberOfEpochs = 2000;
 
+    private string m_patternGroupName;
+
     private IEnumerator m_trainingProcess;
 
     public override void OnInspectorGUI()
@@ -56,21 +58,54 @@ public class PartyRecognitionManagerEditor : Editor
 
         for(int i=0, count=m_instance.SelectedPatterns.Count; i<count;i++)
         {
-            GUILayout.Label(m_instance.SelectedPatterns[i].PatternName);            
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Group Name: "+m_instance.SelectedPatterns[i].GroupName);
+            if (GUILayout.Button("X"))
+            {
+                m_instance.SelectedPatterns.Remove(m_instance.SelectedPatterns[i]);
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
+            //GUILayout.Label(m_instance.SelectedPatterns[i].Definition.PatternName);
+            for (int n=0, count2=m_instance.SelectedPatterns[i].Definition.Count; n < count2; n++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label(m_instance.SelectedPatterns[i].Definition[n].PatternName);
+                if(GUILayout.Button("X"))
+                {
+                    m_instance.SelectedPatterns[i].RemovePattern(m_instance.SelectedPatterns[i].Definition[n]);
+                    return;
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            EditorGUILayout.Space();
         }
 
         EditorGUILayout.Space();
         EditorGUILayout.Space();
 
+        EditorGUILayout.BeginHorizontal();
         int selectedPatternIndex = EditorGUILayout.Popup(m_selectedPatternIndex, CurrentPatternsList());
         if(selectedPatternIndex != m_selectedPatternIndex)
         {
             m_selectedPatternIndex = selectedPatternIndex;
         }
+        string patternGroupName = EditorGUILayout.TextField(m_patternGroupName);
+        if(!string.Equals(m_patternGroupName, patternGroupName))
+        {
+            m_patternGroupName = patternGroupName;
+        }
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
         if(GUILayout.Button("Add Pattern To Selected List"))
         {
-            m_instance.AddSelectedPattern(m_instance.PatternDefinitionSet[m_selectedPatternIndex]);
+            m_instance.AddSelectedPattern(m_patternGroupName, m_instance.PatternDefinitionSet[m_selectedPatternIndex]);
         }
+        if(GUILayout.Button("Force Add Pattern To Selected List"))
+        {
+            m_instance.AddSelectedPattern(m_patternGroupName, m_instance.PatternDefinitionSet[m_selectedPatternIndex], true);
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void Update()

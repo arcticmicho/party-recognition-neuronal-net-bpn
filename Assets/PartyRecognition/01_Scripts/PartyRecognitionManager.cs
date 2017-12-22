@@ -81,8 +81,8 @@ public class PartyRecognitionManager : MonoSingleton<PartyRecognitionManager>
     }
 
 #if UNITY_EDITOR
-    private List<PRPatternDefinition> m_selectedPatterns = new List<PRPatternDefinition>();
-    public List<PRPatternDefinition> SelectedPatterns
+    private List<PRPatternGroup> m_selectedPatterns = new List<PRPatternGroup>();
+    public List<PRPatternGroup> SelectedPatterns
     {
         get { return m_selectedPatterns; }
     }
@@ -160,7 +160,7 @@ public class PartyRecognitionManager : MonoSingleton<PartyRecognitionManager>
     /// </summary>
     /// <param name="points"></param>
     /// <param name="name"></param>
-    public IEnumerator StartBPNTraining(List<PRPatternDefinition> patternDefinitions, int numberOfEpochs)
+    public IEnumerator StartBPNTraining(List<PRPatternGroup> patternDefinitions, int numberOfEpochs)
     {
         m_neuronalNetwork = new PartyBPN(m_defaultNeuronNumberInput -1, Mathf.RoundToInt((patternDefinitions.Count+m_defaultNeuronNumberInput)/2), patternDefinitions.Count, m_defaultLearningRate, m_defaultTheta, m_defaultSigmoidElastic, m_defaultMomentum);
         return m_neuronalNetwork.StartTraining(patternDefinitions, numberOfEpochs);
@@ -190,11 +190,17 @@ public class PartyRecognitionManager : MonoSingleton<PartyRecognitionManager>
     }
 
 #if UNITY_EDITOR
-    public void AddSelectedPattern(PRPatternDefinition selectedDef)
+    public void AddSelectedPattern(string groupName, PRPatternDefinition selectedDef, bool forceAdd = false)
     {
-        if(!m_selectedPatterns.Contains(selectedDef))
+        PRPatternGroup group = m_selectedPatterns.Find(x => string.Equals(x.GroupName, groupName));
+        if(group != null && !forceAdd)
         {
-            m_selectedPatterns.Add(selectedDef);
+            group.AddPattern(selectedDef);
+        }else
+        {
+            PRPatternGroup newGroup = new PRPatternGroup(groupName);
+            newGroup.AddPattern(selectedDef);
+            m_selectedPatterns.Add(newGroup);
         }
     }
 
@@ -203,5 +209,43 @@ public class PartyRecognitionManager : MonoSingleton<PartyRecognitionManager>
         m_selectedPatterns.Clear();
     }
 #endif
+
+    public class PRPatternGroup
+    {
+        private string m_groupName;
+        public string GroupName
+        {
+            get { return m_groupName; }
+        }
+
+        private List<PRPatternDefinition> m_definitions;
+        public List<PRPatternDefinition> Definition
+        {
+            get { return m_definitions; }
+        }
+
+        public PRPatternGroup(string groupName)
+        {
+            m_groupName = groupName;
+            m_definitions = new List<PRPatternDefinition>();
+        }
+
+        public void AddPattern(PRPatternDefinition def)
+        {
+            if (!m_definitions.Contains(def))
+            {
+                m_definitions.Add(def);
+            }
+        }
+        
+        
+        public void RemovePattern(PRPatternDefinition def)
+        {
+            if (m_definitions.Contains(def))
+            {
+                m_definitions.Remove(def);
+            }
+        }
+    }
 
 }

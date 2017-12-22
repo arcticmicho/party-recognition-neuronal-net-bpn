@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using PartyManagerUtils;
+using System;
+using UnityEngine.UI;
 
 public class Example : MonoBehaviour
 {
@@ -18,8 +20,17 @@ public class Example : MonoBehaviour
 
     [SerializeField]
     private ExampleMode m_mode;
+    public ExampleMode Mode
+    {
+        get { return m_mode; }
+        set { m_mode = value; }
+    }
+
     [SerializeField]
     private string m_patternName;
+
+    [SerializeField]
+    private ExampleUI m_exampleUI;
 
     private List<GameObject> m_instantiatedObjects;
     private List<Vector2> m_points;
@@ -34,7 +45,32 @@ public class Example : MonoBehaviour
         m_points = new List<Vector2>();
         m_instantiatedObjects = new List<GameObject>();
         InputManager.Instance.OnDragEvent += OnDrag;
-	}
+        m_exampleUI.Init();
+
+    }
+
+    internal void DrawPattern(string patternId)
+    {
+        PRPatternDefinition pattern;
+        if(PartyRecognitionManager.Instance.TryGetPatternById(patternId, out pattern))
+        {
+            StartCoroutine(DrawPattern(pattern));
+        }
+    }
+
+    private IEnumerator DrawPattern(PRPatternDefinition pattern)
+    {
+        GameObject trailRenderer = GameObject.Instantiate(m_pointRenderer);
+
+        foreach(Vector2 point in pattern.CloudPoints)
+        {
+            trailRenderer.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(point.x, point.y, 10));
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(2f);
+        Destroy(trailRenderer.gameObject);
+    }
 
     private void OnDrag(DragStatus status, Vector3 position, Vector3 last)
     {
